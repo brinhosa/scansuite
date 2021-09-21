@@ -12,7 +12,7 @@ Create a new Product in DefectDojo:
 
 ```
 scansuite.sh init_product <App Name>
-example: ~/scansuite.sh init_product SomeCoolApp
+Example: ~/scansuite.sh init_product SomeCoolApp
 ```
 
 Take a note of created "id" of the product from the output. Create an Engagement within the Product:
@@ -32,7 +32,7 @@ Start the scan from the source code folder.
 cd SomeCoolApp
 scansuite.sh <scanner name> <Engagement id> 
 ```
-Here the <scan name> is the keyword. Choose from the one of the following:
+Here the `scanner name` is the keyword. Choose from the one of the following:
 
 * python      - Bandit Python code scan
 * java        - SpotBugs Java code scan. Will build your code before scan, works with Ant, Gradle, Maven, and SBT build systems.
