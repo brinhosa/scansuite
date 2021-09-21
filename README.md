@@ -1,7 +1,7 @@
 
 ### Static and Dynamic Security Analysis with ScanSuite 
 
-ScanSuite is the bash wrapper for the automation of code (SAST) and dependency (OAST) analysis tools. It also invokes dynamic websites scans (DAST).
+ScanSuite is the bash wrapper for the code (SAST) and dependency (OAST) analysis tools. It also invokes dynamic websites scans (DAST).
 Leverages GitLab Docker images as well as other known open source tools. To run most of the scans you'll need to have Docker installed.
 
 Results are exported to DefectDojo (fill in the IP, api key and csrf token inside the script).
@@ -56,7 +56,8 @@ Example: ~/scansuite.sh python 3
 Trivy container scan. Requires the image name with the tag. Get it installed first:
 
 ```
-wget https://github.com/aquasecurity/trivy/releases/download/v0.18.1/trivy_0.18.1_Linux-64bit.deb && sudo dpkg -i trivy_0.18.1_Linux-64bit.deb
+wget https://github.com/aquasecurity/trivy/releases/download/v0.19.2/trivy_0.19.2_Linux-64bit.deb && sudo dpkg -i trivy_0.19.2_Linux-64bit.deb
+scansuite.sh container <Engagement id> <Container Name>
 
 Example: ~/scansuite.sh container 3 vulnerables/web-dvwa:latest                  
 ```
