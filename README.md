@@ -1,10 +1,10 @@
 
 ### Static and Dynamic Security Analysis with ScanSuite 
 
-ScanSuite is the bash wrapper for the code (SAST) and dependency (OAST) analysis tools. It also invokes dynamic websites scans (DAST).
-Leverages GitLab Docker images as well as other known open source tools. To run most of the scans you'll need to have Docker installed.
+ScanSuite is the bash wrapper for the code (SAST), Containers and dependency (OAST) analysis tools. It also invokes dynamic websites scans (DAST).
+Leverages [GitLab](https://docs.gitlab.com/ee/user/application_security/sast/) Docker images as well as other known open source tools. To run most of the scans you'll need to have Docker installed.
 
-Results are exported to DefectDojo (fill in the IP, api key and csrf token inside the script).
+Results are exported to [DefectDojo](https://github.com/DefectDojo/django-DefectDojo) (fill in the IP, api key and csrf token inside the script). Ensure you have it installed.
 
 #### Prepare the DefectDojo
 
@@ -53,7 +53,7 @@ Example: ~/scansuite.sh python 3
 
 #### Container checks:
 
-Trivy container scan. Requires the image name with the tag. Get it installed first:
+[Trivy](https://github.com/aquasecurity/trivy) container scan. Requires the image name with the tag. Get it installed first:
 
 ```
 wget https://github.com/aquasecurity/trivy/releases/download/v0.19.2/trivy_0.19.2_Linux-64bit.deb && sudo dpkg -i trivy_0.19.2_Linux-64bit.deb
@@ -72,7 +72,7 @@ scansuite.sh <scanner name> <Engagement id>
 ```
 
 * safety      - Checks Python dependencies in requirements.txt file
-* gemnasium   - Supports many languages
+* gemnasium   - Supports [many languages](https://docs.gitlab.com/ee/user/application_security/dependency_scanning/)
 * retire      - Retire JS checks NodeJS/ npm dependencies.
 * dep_check   - OWASP Dependency Check. Supports many languages. As this is not a docker, you'll need to exctract it to your home folder:
 
@@ -96,8 +96,3 @@ Example: ~/scansuite.sh arachni 3 https://google.com
 ```
 
 Once the scan is performed and uploaded to DefectDojo, login there and check the results.
-
-### External References:
-
-* https://docs.gitlab.com/ee/user/application_security/sast/
-* https://docs.gitlab.com/ee/user/application_security/dependency_scanning/

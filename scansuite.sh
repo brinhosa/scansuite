@@ -5,7 +5,6 @@
 ### Leverages GitLab images as well as other known open source tools. Results are exported to DefectDojo.
 ###
 ### Author: Sergey Egorov
-### Feel free to contribute.
 ############
 
 dojo_host='http://YOUR_IP:YOUR_PORT'
