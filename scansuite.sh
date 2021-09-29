@@ -24,6 +24,7 @@ init_engage () {
 upload () {
   echo "Uploading Results to DefectDojo ..."
   curl -X POST "$dojo_host/api/v2/import-scan/" -H  "accept: application/json" -H  "Content-Type: multipart/form-data" -H  "X-CSRFToken: $dojo_csrftoken" -H "Authorization: Token $dojo_apikey" -F "minimum_severity=Low" -F "active=true" -F "verified=true" -F "scan_type=$scan_type" -F "file=@$report_path;type=application/json" -F "engagement=$engagement"
+  rm $report_path
 }
 
 scan () {
@@ -145,7 +146,7 @@ case $1 in
 
   arachni)
     ~/arachni-1.5.1-0.5.12/bin/arachni $3 --report-save-path=my-appsec.com.afr --timeout 2:0:0 --browser-cluster-ignore-images --http-ssl-verify-host --scope-exclude-binaries --checks '*,-sql_injection_timing,-timing_attacks,-code_injection_timing,-os_cmd_injection_timing' --output-only-positives
-    ~/arachni-1.5.1-0.5.12/bin/arachni_reporter my-appsec.com.afr --reporter=json:outfile=arachni.json
+    ~/arachni-1.5.1-0.5.12/bin/arachni_reporter $3.afr --reporter=json:outfile=arachni.json
     scan_type='"Arachni Scan"'
     report_path='arachni.json'
     upload
