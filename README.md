@@ -95,4 +95,15 @@ cd && wget https://github.com/Arachni/arachni/releases/download/v1.5.1/arachni-1
 Example: ~/scansuite.sh arachni 3 https://google.com
 ```
 
+#### IaC (Infrastructure as Code) scan:
+
+Start the scan from the source code folder.
+
+```
+cd SomeCoolApp
+scansuite.sh infra <Engagement id> 
+```
+
+* infra - Ansible, AWS CloudFormation, Kubernetes, Terraform
+
 Once the scan is performed and uploaded to DefectDojo, login there and check the results.

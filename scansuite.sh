@@ -72,28 +72,28 @@ case $1 in
     ;;
 
   js_eslint)
-    container="$repo/eslint:2"
+    container="$repo/eslint:latest"
     scan_type='"GitLab SAST Report"'
     report_path='/tmp/gl-sast-report.json'
     scan
     ;;
   
   js_semgrep)
-    container="$repo/semgrep:2"
+    container="$repo/semgrep:latest"
     scan_type='"GitLab SAST Report"'
     report_path='/tmp/gl-sast-report.json'
     scan
     ;;
 
   php)
-    container="$repo/phpcs-security-audit:2"
+    container="$repo/phpcs-security-audit:latest"
     scan_type='"GitLab SAST Report"'
     report_path='/tmp/gl-sast-report.json'
     scan
     ;;
 
   net)
-    container="$repo/security-code-scan:2"
+    container="$repo/security-code-scan:latest"
     scan_type='"GitLab SAST Report"'
     report_path='/tmp/gl-sast-report.json'
     scan
@@ -107,7 +107,7 @@ case $1 in
     ;;
 
   nodejs)
-    container="$repo/nodejs-scan:2"
+    container="$repo/nodejs-scan:latest"
     scan_type='"GitLab SAST Report"'
     report_path='/tmp/gl-sast-report.json'
     scan
@@ -136,7 +136,7 @@ case $1 in
 
   secrets)
     echo "DefectDojo doesn't support this scan type. Parse the results manually."
-    container="$repo/secrets:3"
+    container="$repo/secrets:latest"
     scan_type='GitLab SAST Report'
     report_path='/tmp/gl-secret-detection-report.json'
     scan_secrets
@@ -201,14 +201,14 @@ case $1 in
     ;;
 
   gemnasium-maven)
-    container="$repo/gemnasium-maven:2"
+    container="$repo/gemnasium-maven:latest"
     scan_type='GitLab Dependency Scanning Report'
     report_path='/tmp/gl-dependency-scanning-report.json'
     scan
     ;;
 
   retire)
-    container="$repo/retire.js:2"
+    container="$repo/retire.js:latest"
     scan_type='GitLab Dependency Scanning Report'
     report_path='/tmp/gl-dependency-scanning-report.json'
     scan
@@ -221,6 +221,18 @@ case $1 in
     trivy image -f json -o trivy.json $3
     scan_type='Trivy Scan'
     report_path='trivy.json'
+    upload
+    ;;
+
+# Infrastructure as Code.
+
+  infra)
+    # Original container from Gitlab was changed to fix the reporting issue (report is not copied to the artifact directory).
+    #container="$repo/kics:latest"
+    container="cepxeo/kics:1"
+    scan_type='"GitLab SAST Report"'
+    report_path='/tmp/gl-sast-report.json'
+    docker run --rm --volume $(pwd):/src --volume /tmp:/report cepxeo/kics:1 /start.sh
     upload
     ;;
 
