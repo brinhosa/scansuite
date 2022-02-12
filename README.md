@@ -35,9 +35,9 @@ scansuite.sh <scanner name> <Engagement id>
 Here the `scanner name` is the keyword. Choose from the one of the following:
 
 * python      - Bandit Python code scan
-* java        - SpotBugs Java code scan. Will build your code before scan, works with Ant, Gradle, Maven, and SBT build systems.
-* js_eslint   - ESLint JavaScript scan
-* js_semgrep  - Semgrep JavaScript scan
+* java        - SpotBugs Java, Kotlin, Groovy, Scala code scan. Works with Ant, Gradle, Maven, and SBT build systems.
+* eslint      - ESLint JavaScript and React scan.
+* semgrep     - C#, Go, Java, JavaScript, JSX, JSON, Python, Ruby, TypeScript, TSX
 * php         - PHP CS security-audit
 * net         - .NET Security Code Scan
 * nodejs      - NodeJsScan
@@ -71,8 +71,9 @@ cd SomeCoolApp
 scansuite.sh <scanner name> <Engagement id> 
 ```
 
-* safety      - Checks Python dependencies in requirements.txt file
 * gemnasium   - Supports [many languages](https://docs.gitlab.com/ee/user/application_security/dependency_scanning/)
+* gemnasium_maven - For Java projects using either maven or gradle to manage dependencies.
+* gemnasium_python - Checks Python dependencies in requirements.txt file
 * retire      - Retire JS checks NodeJS/ npm dependencies.
 * dep_check   - OWASP Dependency Check. Supports many languages. As this is not a docker, you'll need to exctract it to your home folder:
 
@@ -104,6 +105,7 @@ cd SomeCoolApp
 scansuite.sh infra <Engagement id> 
 ```
 
-* infra - Ansible, AWS CloudFormation, Kubernetes, Terraform
+* infra - Checkmarx KICS scanner for Ansible, AWS CloudFormation, Kubernetes, Terraform
+* config - Trivy checks for config files and dependencies
 
 Once the scan is performed and uploaded to DefectDojo, login there and check the results.

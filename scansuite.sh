@@ -18,7 +18,7 @@ init_product () {
 
 init_engage () {
   echo "Creating New Engagement ..."
-    curl -X POST "$dojo_host/api/v2/engagements/" -H "accept: application/json" -H "Content-Type: multipart/form-data" -H "X-CSRFToken: $dojo_csrftoken" -H "Authorization: Token $dojo_apikey" -F "name=AppEngagement" -F "description=AppEngagement" -F "target_start=2021-05-20" -F "target_end=2022-05-20" -F "deduplication_on_engagement=true" -F "product=$product_id"
+    curl -X POST "$dojo_host/api/v2/engagements/" -H "accept: application/json" -H "Content-Type: multipart/form-data" -H "X-CSRFToken: $dojo_csrftoken" -H "Authorization: Token $dojo_apikey" -F "name=AppEngagement" -F "description=AppEngagement" -F "target_start=2022-02-12" -F "target_end=2023-05-20" -F "deduplication_on_engagement=true" -F "product=$product_id"
 }
 
 upload () {
@@ -71,14 +71,14 @@ case $1 in
     scan
     ;;
 
-  js_eslint)
+  eslint)
     container="$repo/eslint:latest"
     scan_type='"GitLab SAST Report"'
     report_path='/tmp/gl-sast-report.json'
     scan
     ;;
   
-  js_semgrep)
+  semgrep)
     container="$repo/semgrep:latest"
     scan_type='"GitLab SAST Report"'
     report_path='/tmp/gl-sast-report.json'
@@ -145,15 +145,16 @@ case $1 in
 # Dynamic analyzers
 
   arachni)
-    ~/arachni-1.5.1-0.5.12/bin/arachni $3 --report-save-path=my-appsec.com.afr --timeout 2:0:0 --browser-cluster-ignore-images --http-ssl-verify-host --scope-exclude-binaries --checks '*,-sql_injection_timing,-timing_attacks,-code_injection_timing,-os_cmd_injection_timing' --output-only-positives
-    ~/arachni-1.5.1-0.5.12/bin/arachni_reporter $3.afr --reporter=json:outfile=arachni.json
+    ~/arachni-1.5.1-0.5.12/bin/arachni $3 --report-save-path=arachni-report.afr --timeout 2:0:0 --browser-cluster-ignore-images --http-ssl-verify-host --scope-exclude-binaries --checks '*,-sql_injection_timing,-timing_attacks,-code_injection_timing,-os_cmd_injection_timing' --output-only-positives
+    ~/arachni-1.5.1-0.5.12/bin/arachni_reporter arachni-report.afr --reporter=json:outfile=arachni.json
     scan_type='"Arachni Scan"'
     report_path='arachni.json'
     upload
     ;;
 
   zap)
-    # ToDo
+    docker run --rm --volume $(pwd):/src --volume /tmp:/report registry.gitlab.com/gitlab-org/security-products/analyzers/dast:latest /analyze -t $3
+
     ;;
 
   nikto)
@@ -179,13 +180,6 @@ case $1 in
 
 # Dependency checks
 
-  safety)
-    docker run -v $(pwd):/src --rm hysnsec/safety check -r /src/requirements.txt --json -o /src/oast-results.json
-    scan_type='"Safety Scan"'
-    report_path='oast-results.json'
-    upload
-    ;;
-
   dep_check)
     ~/dependency-check/bin/dependency-check.sh --project test --format XML --scan .
     scan_type='"Dependency Check Scan"'
@@ -206,6 +200,13 @@ case $1 in
     report_path='/tmp/gl-dependency-scanning-report.json'
     scan
     ;;
+  
+  gemnasium-python)
+  container="$repo/gemnasium-python:latest"
+  scan_type='GitLab Dependency Scanning Report'
+  report_path='/tmp/gl-dependency-scanning-report.json'
+  scan
+  ;;
 
   retire)
     container="$repo/retire.js:latest"
@@ -214,7 +215,7 @@ case $1 in
     scan
     ;;
 
-# Container checks. Provide the image path.
+# Trivy docker image checks. Provide the image path.
 
   container)
     docker build -t $3 .
@@ -233,6 +234,14 @@ case $1 in
     scan_type='"GitLab SAST Report"'
     report_path='/tmp/gl-sast-report.json'
     docker run --rm --volume $(pwd):/src --volume /tmp:/report cepxeo/kics:1 /start.sh
+    upload
+    ;;
+
+  # Trivy config files and dependency checks
+  config)
+    trivy fs -f json -o trivy.json --security-checks vuln,config .
+    scan_type='Trivy Scan'
+    report_path='trivy.json'
     upload
     ;;
 
