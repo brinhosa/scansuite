@@ -29,13 +29,13 @@ upload () {
 
 scan () {
   echo "Starting the scan ..."
-  docker run --rm --volume $(pwd):/src --volume /tmp:/report $container /analyzer r --target-dir /src --artifact-dir /report --max-depth 10
+  docker run --rm --volume $(pwd):/src --volume $(pwd):/report --user $(id -u):$(id -g) $container /analyzer r --target-dir /src --artifact-dir /report --max-depth 10
   upload
 }
 
 scan_secrets () {
   echo "Starting the Secrets scan ..."
-  docker run --rm --volume $(pwd):/src --volume /tmp:/report $container /analyzer r --max-depth 10 --full-scan --target-dir /src --artifact-dir /report
+  docker run --rm --volume $(pwd):/src --volume $(pwd):/report --user $(id -u):$(id -g) $container /analyzer r --max-depth 10 --full-scan --target-dir /src --artifact-dir /report
   upload
 }
 
