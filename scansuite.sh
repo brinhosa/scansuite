@@ -36,7 +36,8 @@ scan () {
 scan_secrets () {
   echo "Starting the Secrets scan ..."
   docker run --rm --volume $(pwd):/src --volume $(pwd):/report --user $(id -u):$(id -g) $container /analyzer r --max-depth 10 --full-scan --target-dir /src --artifact-dir /report
-  upload
+  cat $report_path
+  rm $report_path
 }
 
 engagement=$2
@@ -60,77 +61,77 @@ case $1 in
   java)
     container="$repo/spotbugs:latest"
     scan_type='"GitLab SAST Report"'
-    report_path='/tmp/gl-sast-report.json'
+    report_path='gl-sast-report.json'
     scan
     ;;
   
   python)
     container="$repo/bandit:latest"
     scan_type='"GitLab SAST Report"'
-    report_path='/tmp/gl-sast-report.json'
+    report_path='gl-sast-report.json'
     scan
     ;;
 
   eslint)
     container="$repo/eslint:latest"
     scan_type='"GitLab SAST Report"'
-    report_path='/tmp/gl-sast-report.json'
+    report_path='gl-sast-report.json'
     scan
     ;;
   
   semgrep)
     container="$repo/semgrep:latest"
     scan_type='"GitLab SAST Report"'
-    report_path='/tmp/gl-sast-report.json'
+    report_path='gl-sast-report.json'
     scan
     ;;
 
   php)
     container="$repo/phpcs-security-audit:latest"
     scan_type='"GitLab SAST Report"'
-    report_path='/tmp/gl-sast-report.json'
+    report_path='gl-sast-report.json'
     scan
     ;;
 
   net)
     container="$repo/security-code-scan:latest"
     scan_type='"GitLab SAST Report"'
-    report_path='/tmp/gl-sast-report.json'
+    report_path='gl-sast-report.json'
     scan
     ;;
 
   mobsf)
     container="$repo/mobsf:latest"
     scan_type='"GitLab SAST Report"'
-    report_path='/tmp/gl-sast-report.json'
+    report_path='gl-sast-report.json'
     scan
     ;;
 
   nodejs)
     container="$repo/nodejs-scan:latest"
     scan_type='"GitLab SAST Report"'
-    report_path='/tmp/gl-sast-report.json'
+    report_path='gl-sast-report.json'
     scan
     ;;
 
   go)
     container="$repo/gosec:latest"
     scan_type='"GitLab SAST Report"'
-    report_path='/tmp/gl-sast-report.json'
+    report_path='gl-sast-report.json'
     scan
     ;;
 
   ruby)
     container="$repo/brakeman:latest"
     scan_type='"GitLab SAST Report"'
-    report_path='/tmp/gl-sast-report.json'
+    report_path='gl-sast-report.json'
     scan
     ;;
 
   cscan)
     container="$repo/flawfinder:latest"
     scan_type='"GitLab SAST Report"'
-    report_path='/tmp/gl-sast-report.json'
+    report_path='gl-sast-report.json'
     scan
     ;;
 
@@ -138,7 +139,7 @@ case $1 in
     echo "DefectDojo doesn't support this scan type. Parse the results manually."
     container="$repo/secrets:latest"
     scan_type='GitLab SAST Report'
-    report_path='/tmp/gl-secret-detection-report.json'
+    report_path='gl-secret-detection-report.json'
     scan_secrets
     ;;
 
@@ -158,21 +159,21 @@ case $1 in
     ;;
 
   nikto)
-    docker run --rm -v $(pwd):/tmp hysnsec/nikto -h $3 -o /tmp/nikto-output.xml
+    docker run --rm -v $(pwd):/tmp hysnsec/nikto -h $3 -o nikto-output.xml
     scan_type='"Nikto Scan"'
     report_path='nikto-output.xml'
     upload
     ;;
 
   sslyze)
-    docker run --rm -v $(pwd):/tmp hysnsec/sslyze --regular $3 --json_out /tmp/sslyze-output.json
+    docker run --rm -v $(pwd):/tmp hysnsec/sslyze --regular $3 --json_out sslyze-output.json
     scan_type='"Sslyze Scan"'
     report_path='sslyze-output.json'
     upload
     ;;
 
   nmap)
-    docker run --rm -v $(pwd):/tmp hysnsec/nmap $3 -oX /tmp/nmap-output.xml
+    docker run --rm -v $(pwd):/tmp hysnsec/nmap $3 -oX nmap-output.xml
     scan_type='"Nmap Scan"'
     report_path='nmap-output.xml'
     upload
@@ -190,28 +191,28 @@ case $1 in
   gemnasium)
     container="$repo/gemnasium:latest"
     scan_type='GitLab Dependency Scanning Report'
-    report_path='/tmp/gl-dependency-scanning-report.json'
+    report_path='gl-dependency-scanning-report.json'
     scan
     ;;
 
   gemnasium-maven)
     container="$repo/gemnasium-maven:latest"
     scan_type='GitLab Dependency Scanning Report'
-    report_path='/tmp/gl-dependency-scanning-report.json'
+    report_path='gl-dependency-scanning-report.json'
     scan
     ;;
   
   gemnasium-python)
   container="$repo/gemnasium-python:latest"
   scan_type='GitLab Dependency Scanning Report'
-  report_path='/tmp/gl-dependency-scanning-report.json'
+  report_path='gl-dependency-scanning-report.json'
   scan
   ;;
 
   retire)
     container="$repo/retire.js:latest"
     scan_type='GitLab Dependency Scanning Report'
-    report_path='/tmp/gl-dependency-scanning-report.json'
+    report_path='gl-dependency-scanning-report.json'
     scan
     ;;
 
@@ -232,7 +233,7 @@ case $1 in
     #container="$repo/kics:latest"
     container="cepxeo/kics:1"
     scan_type='"GitLab SAST Report"'
-    report_path='/tmp/gl-sast-report.json'
+    report_path='gl-sast-report.json'
     docker run --rm --volume $(pwd):/src --volume /tmp:/report cepxeo/kics:1 /start.sh
     upload
     ;;
