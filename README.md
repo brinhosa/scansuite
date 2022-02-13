@@ -4,7 +4,7 @@
 ScanSuite is the bash wrapper for the code (SAST), Infrastructure as Code (IaC), Containers and dependency (SCA / OAST) analysis tools. It also invokes dynamic websites scans (DAST).
 Leverages [GitLab](https://docs.gitlab.com/ee/user/application_security/sast/) Docker images as well as other known open source tools. To run most of the scans you'll need to have Docker installed.
 
-Results are exported to [DefectDojo](https://github.com/DefectDojo/django-DefectDojo) (fill in the IP, api key and csrf token inside the script). Ensure you have it installed.
+Results are exported to [DefectDojo](https://github.com/DefectDojo/django-DefectDojo) (fill in the IP and api key inside the script). Ensure you have it installed.
 
 #### Prepare the DefectDojo
 
@@ -105,7 +105,7 @@ cd SomeCoolApp
 scansuite.sh infra <Engagement id> 
 ```
 
-* infra - Checkmarx KICS scanner for Ansible, AWS CloudFormation, Kubernetes, Terraform
-* config - Trivy checks for config files and dependencies
+* infra - Checkmarx KICS scanner for Ansible, AWS CloudFormation, Kubernetes, Terraform, Docker
+* config - Trivy checks for config files and dependencies. Refer to `Container checks` section for Trivy installation.
 
 Once the scan is performed and uploaded to DefectDojo, login there and check the results.

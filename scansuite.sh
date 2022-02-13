@@ -9,21 +9,20 @@
 
 dojo_host='http://YOUR_IP:YOUR_PORT'
 dojo_apikey='YOUR_KEY'
-dojo_csrftoken='YOUR_TOKEN'
 
 init_product () {
   echo "Creating New Product ..."
-    curl -X POST "$dojo_host/api/v2/products/" -H "accept: application/json" -H "Content-Type: application/json" -H "X-CSRFToken: $dojo_csrftoken" -H "Authorization: Token $dojo_apikey" -d "{  \"name\": \"$product\",  \"description\": \"$product\",  \"prod_type\": 1}"
+    curl -k -X POST "$dojo_host/api/v2/products/" -H "accept: application/json" -H "Content-Type: application/json" -H "Authorization: Token $dojo_apikey" -d "{  \"name\": \"$product\",  \"description\": \"$product\",  \"prod_type\": 1}"
 }
 
 init_engage () {
   echo "Creating New Engagement ..."
-    curl -X POST "$dojo_host/api/v2/engagements/" -H "accept: application/json" -H "Content-Type: multipart/form-data" -H "X-CSRFToken: $dojo_csrftoken" -H "Authorization: Token $dojo_apikey" -F "name=AppEngagement" -F "description=AppEngagement" -F "target_start=2022-02-12" -F "target_end=2023-05-20" -F "deduplication_on_engagement=true" -F "product=$product_id"
+    curl -k -X POST "$dojo_host/api/v2/engagements/" -H "accept: application/json" -H "Content-Type: multipart/form-data" -H "Authorization: Token $dojo_apikey" -F "name=AppEngagement" -F "description=AppEngagement" -F "target_start=2022-02-12" -F "target_end=2023-05-20" -F "deduplication_on_engagement=true" -F "product=$product_id"
 }
 
 upload () {
   echo "Uploading Results to DefectDojo ..."
-  curl -X POST "$dojo_host/api/v2/import-scan/" -H  "accept: application/json" -H  "Content-Type: multipart/form-data" -H  "X-CSRFToken: $dojo_csrftoken" -H "Authorization: Token $dojo_apikey" -F "minimum_severity=Low" -F "active=true" -F "verified=true" -F "scan_type=$scan_type" -F "file=@$report_path;type=application/json" -F "engagement=$engagement"
+  curl -k -X POST "$dojo_host/api/v2/import-scan/" -H  "accept: application/json" -H  "Content-Type: multipart/form-data"  -H "Authorization: Token $dojo_apikey" -F "minimum_severity=Low" -F "active=true" -F "verified=true" -F "scan_type=$scan_type" -F "file=@$report_path;type=application/json" -F "engagement=$engagement"
   rm $report_path
 }
 
@@ -31,13 +30,6 @@ scan () {
   echo "Starting the scan ..."
   docker run --rm --volume $(pwd):/src --volume $(pwd):/report --user $(id -u):$(id -g) $container /analyzer r --target-dir /src --artifact-dir /report --max-depth 10
   upload
-}
-
-scan_secrets () {
-  echo "Starting the Secrets scan ..."
-  docker run --rm --volume $(pwd):/src --volume $(pwd):/report --user $(id -u):$(id -g) $container /analyzer r --max-depth 10 --full-scan --target-dir /src --artifact-dir /report
-  cat $report_path
-  rm $report_path
 }
 
 engagement=$2
@@ -62,7 +54,9 @@ case $1 in
     container="$repo/spotbugs:latest"
     scan_type='"GitLab SAST Report"'
     report_path='gl-sast-report.json'
-    scan
+    docker run --rm --volume $(pwd):/src --volume $(pwd):/report $container /analyzer r --target-dir /src --artifact-dir /report --max-depth 10
+    upload
+    ## Implement the gl-sast-report.json cleanup due to it is owned by root.
     ;;
   
   python)
@@ -140,7 +134,9 @@ case $1 in
     container="$repo/secrets:latest"
     scan_type='GitLab SAST Report'
     report_path='gl-secret-detection-report.json'
-    scan_secrets
+    docker run --rm --volume $(pwd):/src --volume $(pwd):/report --user $(id -u):$(id -g) $container /analyzer r --max-depth 10 --full-scan --target-dir /src --artifact-dir /report
+    cat $report_path
+    rm $report_path
     ;;
 
 # Dynamic analyzers
@@ -154,26 +150,27 @@ case $1 in
     ;;
 
   zap)
-    docker run --rm --volume $(pwd):/src --volume /tmp:/report registry.gitlab.com/gitlab-org/security-products/analyzers/dast:latest /analyze -t $3
+  #ToDo
+    #docker run --rm --volume $(pwd):/src --volume /tmp:/report --user $(id -u):$(id -g) registry.gitlab.com/gitlab-org/security-products/analyzers/dast:latest /analyze -t $3
 
     ;;
 
   nikto)
-    docker run --rm -v $(pwd):/tmp hysnsec/nikto -h $3 -o nikto-output.xml
+    docker run --rm -v $(pwd):/tmp --user $(id -u):$(id -g) hysnsec/nikto -h $3 -o /tmp/nikto-output.xml
     scan_type='"Nikto Scan"'
     report_path='nikto-output.xml'
     upload
     ;;
 
   sslyze)
-    docker run --rm -v $(pwd):/tmp hysnsec/sslyze --regular $3 --json_out sslyze-output.json
+    docker run --rm -v $(pwd):/tmp --user $(id -u):$(id -g) hysnsec/sslyze --regular $3 --json_out /tmp/sslyze-output.json
     scan_type='"Sslyze Scan"'
     report_path='sslyze-output.json'
     upload
     ;;
 
   nmap)
-    docker run --rm -v $(pwd):/tmp hysnsec/nmap $3 -oX nmap-output.xml
+    docker run --rm -v $(pwd):/tmp --user $(id -u):$(id -g) hysnsec/nmap $3 -oX /tmp/nmap-output.xml
     scan_type='"Nmap Scan"'
     report_path='nmap-output.xml'
     upload
@@ -229,13 +226,10 @@ case $1 in
 # Infrastructure as Code.
 
   infra)
-    # Original container from Gitlab was changed to fix the reporting issue (report is not copied to the artifact directory).
-    #container="$repo/kics:latest"
-    container="cepxeo/kics:1"
+    container="$repo/kics:latest"
     scan_type='"GitLab SAST Report"'
     report_path='gl-sast-report.json'
-    docker run --rm --volume $(pwd):/src --volume /tmp:/report cepxeo/kics:1 /start.sh
-    upload
+    scan
     ;;
 
   # Trivy config files and dependency checks
