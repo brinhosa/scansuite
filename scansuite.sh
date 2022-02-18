@@ -74,10 +74,12 @@ case $1 in
     ;;
   
   semgrep)
-    container="$repo/semgrep:latest"
+    #container="$repo/semgrep:latest"
+    container="returntocorp/semgrep-agent:v1"
     scan_type='"GitLab SAST Report"'
     report_path='gl-sast-report.json'
-    scan
+    docker run -v $(pwd):/src --workdir /src $container semgrep-agent --config auto --gitlab-json > $report_path
+    upload
     ;;
 
   php)
