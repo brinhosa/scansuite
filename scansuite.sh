@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ############
-### ScanSuite provides the automation of code (SAST) and dependency (OAST) analysis. It also invokes the dynamic websites scans (DAST).
+### ScanSuite provides the automation of code (SAST), dependency (SCA), infrastructure as code (IACS) and container analysis. It also invokes the dynamic scans (DAST).
 ### Leverages GitLab images as well as other known open source tools. Results are exported to DefectDojo.
 ###
 ### Author: Sergey Egorov
@@ -74,11 +74,10 @@ case $1 in
     ;;
   
   semgrep)
-    #container="$repo/semgrep:latest"
-    container="returntocorp/semgrep-agent:v1"
-    scan_type='"GitLab SAST Report"'
-    report_path='gl-sast-report.json'
-    docker run -v $(pwd):/src --workdir /src $container semgrep-agent --config auto --gitlab-json > $report_path
+    container="returntocorp/semgrep"
+    scan_type='"Semgrep JSON Report"'
+    report_path='semgrep-sast-report.json'
+    docker run --rm -v "${PWD}:/src" --user $(id -u):$(id -g) $container --config p/owasp-top-ten --json -o $report$
     upload
     ;;
 
