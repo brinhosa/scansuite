@@ -51,15 +51,15 @@ Here the `scanner name` is the keyword. Choose from the one of the following:
 Example: ~/scansuite.sh python 3
 ```
 
-#### Container checks:
+#### Docker image checks:
 
 [Trivy](https://github.com/aquasecurity/trivy) Docker image scan. Requires the image name with the tag. Get it installed first:
 
 ```
 wget https://github.com/aquasecurity/trivy/releases/download/v0.23.0/trivy_0.23.0_Linux-64bit.deb && sudo dpkg -i trivy_0.23.0_Linux-64bit.deb
-scansuite.sh container <Engagement id> <Image Name>
+scansuite.sh image_trivy <Engagement id> <Image Name>
 
-Example: ~/scansuite.sh container 3 vulnerables/web-dvwa:latest                  
+Example: ~/scansuite.sh image_trivy 3 vulnerables/web-dvwa:latest                  
 ```
 
 #### Dependency checks:
@@ -102,10 +102,10 @@ Start the scan from the source code folder.
 
 ```
 cd SomeCoolApp
-scansuite.sh infra <Engagement id> 
+scansuite.sh iacs_kics <Engagement id> 
 ```
 
-* infra - Checkmarx KICS scanner for Ansible, AWS CloudFormation, Kubernetes, Terraform, Docker
-* config - Trivy checks for config files and dependencies. Refer to `Container checks` section for Trivy installation.
+* iacs_kics - Checkmarx KICS scanner for Ansible, AWS CloudFormation, Kubernetes, Terraform, Docker
+* iacs_trivy - Trivy checks for config files and dependencies. Refer to `Container checks` section for Trivy installation.
 
 Once the scan is performed and uploaded to DefectDojo, login there and check the results.
