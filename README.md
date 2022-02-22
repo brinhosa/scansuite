@@ -53,11 +53,11 @@ Example: ~/scansuite.sh python 3
 
 #### Container checks:
 
-[Trivy](https://github.com/aquasecurity/trivy) container scan. Requires the image name with the tag. Get it installed first:
+[Trivy](https://github.com/aquasecurity/trivy) Docker image scan. Requires the image name with the tag. Get it installed first:
 
 ```
-wget https://github.com/aquasecurity/trivy/releases/download/v0.19.2/trivy_0.19.2_Linux-64bit.deb && sudo dpkg -i trivy_0.19.2_Linux-64bit.deb
-scansuite.sh container <Engagement id> <Container Name>
+wget https://github.com/aquasecurity/trivy/releases/download/v0.23.0/trivy_0.23.0_Linux-64bit.deb && sudo dpkg -i trivy_0.23.0_Linux-64bit.deb
+scansuite.sh container <Engagement id> <Image Name>
 
 Example: ~/scansuite.sh container 3 vulnerables/web-dvwa:latest                  
 ```
@@ -72,13 +72,13 @@ scansuite.sh <scanner name> <Engagement id>
 ```
 
 * gemnasium   - Supports [many languages](https://docs.gitlab.com/ee/user/application_security/dependency_scanning/)
-* gemnasium_maven - For Java projects using either maven or gradle to manage dependencies.
 * gemnasium_python - Checks Python dependencies in requirements.txt file
 * retire      - Retire JS checks NodeJS/ npm dependencies.
-* dep_check   - OWASP Dependency Check. Supports many languages. As this is not a docker, you'll need to exctract it to your home folder:
+* dep_trivy   - Trivy dependency checks. Refer to `Container checks` section for Trivy installation.
+* dep_owasp   - OWASP Dependency Check. Supports many languages. As this is not a docker, you'll need to exctract it to your home folder:
 
 ```
-cd && wget https://github.com/jeremylong/DependencyCheck/releases/download/v6.1.6/dependency-check-6.1.6-release.zip && unzip dependency-check-6.1.6-release.zip
+cd && wget https://github.com/jeremylong/DependencyCheck/releases/download/v6.5.3/dependency-check-6.5.3-release.zip && unzip dependency-check-6.5.3-release.zip
 ```
 
 #### DAST scan:

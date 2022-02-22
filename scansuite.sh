@@ -56,7 +56,7 @@ case $1 in
     report_path='gl-sast-report.json'
     docker run --rm --volume $(pwd):/src --volume $(pwd):/report $container /analyzer r --target-dir /src --artifact-dir /report --max-depth 10
     upload
-    ## Implement the gl-sast-report.json cleanup due to it is owned by root.
+    ## Implement the gl-sast-report.json cleanup after upload due to it is owned by root.
     ;;
   
   python)
@@ -77,7 +77,7 @@ case $1 in
     container="returntocorp/semgrep"
     scan_type='"Semgrep JSON Report"'
     report_path='semgrep-sast-report.json'
-    docker run --rm -v "${PWD}:/src" --user $(id -u):$(id -g) $container --config p/owasp-top-ten --json -o $report$
+    docker run --rm -v "${PWD}:/src" --user $(id -u):$(id -g) $container --config p/owasp-top-ten --json -o $report_path
     upload
     ;;
 
@@ -179,7 +179,7 @@ case $1 in
 
 # Dependency checks
 
-  dep_check)
+  dep_owasp)
     ~/dependency-check/bin/dependency-check.sh --project test --format XML --scan .
     scan_type='"Dependency Check Scan"'
     report_path='dependency-check-report.xml'
@@ -188,13 +188,6 @@ case $1 in
 
   gemnasium)
     container="$repo/gemnasium:latest"
-    scan_type='GitLab Dependency Scanning Report'
-    report_path='gl-dependency-scanning-report.json'
-    scan
-    ;;
-
-  gemnasium-maven)
-    container="$repo/gemnasium-maven:latest"
     scan_type='GitLab Dependency Scanning Report'
     report_path='gl-dependency-scanning-report.json'
     scan
@@ -214,9 +207,17 @@ case $1 in
     scan
     ;;
 
-# Trivy docker image checks. Provide the image path.
+  # Trivy dependency checks
+  dep_trivy)
+    trivy fs -f json -o trivy.json --security-checks vuln .
+    scan_type='Trivy Scan'
+    report_path='trivy.json'
+    upload
+    ;;
 
-  container)
+# Trivy Docker image checks. Provide the image path.
+
+  image_trivy)
     docker build -t $3 .
     trivy image -f json -o trivy.json $3
     scan_type='Trivy Scan'
@@ -226,19 +227,17 @@ case $1 in
 
 # Infrastructure as Code.
 
-  infra)
+  iacs_kics)
     container="$repo/kics:latest"
     scan_type='"GitLab SAST Report"'
     report_path='gl-sast-report.json'
     scan
     ;;
 
-  # Trivy config files and dependency checks
-  config)
-    trivy fs -f json -o trivy.json --security-checks vuln,config .
-    scan_type='Trivy Scan'
-    report_path='trivy.json'
-    upload
+  # Trivy checks
+  iacs_trivy)
+    echo "DefectDojo doesn't support this scan type. Parse the results manually."
+    trivy fs --security-checks config .
     ;;
 
   *)
