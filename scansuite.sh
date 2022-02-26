@@ -7,8 +7,8 @@
 ### Author: Sergey Egorov
 ############
 
-dojo_host=$HOST_URL
-dojo_apikey=$DOJO_KEY
+dojo_host=HOST_URL
+dojo_apikey=DOJO_API_KEY
 
 init_product () {
   echo "Creating New Product ..."
@@ -67,9 +67,14 @@ install_arachni() {
   fi
 }
 
-
 engagement=$2
 repo='registry.gitlab.com/gitlab-org/security-products/analyzers'
+
+if ! command -v curl &> /dev/null
+then
+    echo "Installing CURL ..."
+    apk add curl
+fi
 
 case $1 in
 
