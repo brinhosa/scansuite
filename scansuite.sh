@@ -50,7 +50,7 @@ install_trivy() {
   if ! command -v trivy &> /dev/null
   then
       echo "Installing Trivy ..."
-      wget https://github.com/aquasecurity/trivy/releases/download/v$VERSION/trivy_"$VERSION"_Linux-64bit.deb && sudo dpkg -i trivy_$VERSION_Linux-64bit.deb
+      wget https://github.com/aquasecurity/trivy/releases/download/v$VERSION/trivy_"$VERSION"_Linux-64bit.deb && sudo dpkg -i trivy_"$VERSION"_Linux-64bit.deb
       rm trivy_"$VERSION"_Linux-64bit.deb
   fi
 }
@@ -70,6 +70,7 @@ install_arachni() {
 engagement=$2
 repo='registry.gitlab.com/gitlab-org/security-products/analyzers'
 
+# When executed inside the Docker
 if ! command -v curl &> /dev/null
 then
     echo "Installing CURL ..."
@@ -237,10 +238,10 @@ case $1 in
     ;;
   
   gemnasium-python)
-  container="$repo/gemnasium-python:latest"
-  scan_type='GitLab Dependency Scanning Report'
-  report_path='gl-dependency-scanning-report.json'
-  scan
+    container="$repo/gemnasium-python:latest"
+    scan_type='GitLab Dependency Scanning Report'
+    report_path='gl-dependency-scanning-report.json'
+    scan
   ;;
 
   retire)
@@ -250,7 +251,7 @@ case $1 in
     scan
     ;;
 
-  # Trivy dependency checks
+# Trivy dependency checks
   dep_trivy)
     install_trivy
     trivy fs -f json -o trivy.json --security-checks vuln .
@@ -259,7 +260,7 @@ case $1 in
     upload
     ;;
 
-# Trivy Docker image checks. Provide the image path.
+# Trivy Docker image checks.
 
   image_trivy)
     install_trivy
@@ -279,7 +280,7 @@ case $1 in
     scan
     ;;
 
-  # Trivy checks
+# Trivy checks
   iacs_trivy)
     install_trivy
     echo "DefectDojo doesn't support this scan type. Parse the results manually."

@@ -82,11 +82,7 @@ scansuite.sh <scanner name> <Engagement id> <URL>
 
 * nikto       - Nikto scan. Example: ~/scansuite.sh nikto 3 https://google.com
 * sslyze      - SSL checks. Example: ~/scansuite.sh sslyze 3 google.com:443
-* arachni     - Ensure you have it in your home path:
-
-```
-Example: ~/scansuite.sh arachni 3 https://google.com
-```
+* arachni     - Arachni scan. Example: ~/scansuite.sh arachni 3 https://google.com
 
 #### IACS (Infrastructure as Code) scan:
 
