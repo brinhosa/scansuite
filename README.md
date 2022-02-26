@@ -1,7 +1,7 @@
 
 ### Static and Dynamic Security Analysis with ScanSuite 
 
-ScanSuite is the bash wrapper around the code (SAST), Infrastructure as Code (IaC), Containers and dependency (SCA / OAST) analysis tools. It also invokes dynamic scans (DAST).
+ScanSuite is the bash wrapper around the code (SAST), Infrastructure as Code (IACS), Containers and dependency (SCA) analysis tools. It also invokes dynamic scans (DAST).
 Leverages [GitLab](https://docs.gitlab.com/ee/user/application_security/sast/) Docker images as well as other known open source tools. To run most of the scans you'll need to have Docker installed.
 
 Results are exported to [DefectDojo](https://github.com/DefectDojo/django-DefectDojo) (fill in the IP and api key inside the script). Ensure you have it installed.
@@ -53,12 +53,9 @@ Example: ~/scansuite.sh python 3
 
 #### Docker image checks:
 
-[Trivy](https://github.com/aquasecurity/trivy) Docker image scan. Requires the image name with the tag. Get it installed first:
+[Trivy](https://github.com/aquasecurity/trivy) Docker image scan. Requires the image name with the tag.
 
 ```
-wget https://github.com/aquasecurity/trivy/releases/download/v0.23.0/trivy_0.23.0_Linux-64bit.deb && sudo dpkg -i trivy_0.23.0_Linux-64bit.deb
-scansuite.sh image_trivy <Engagement id> <Image Name>
-
 Example: ~/scansuite.sh image_trivy 3 vulnerables/web-dvwa:latest                  
 ```
 
@@ -74,12 +71,8 @@ scansuite.sh <scanner name> <Engagement id>
 * gemnasium   - Supports [many languages](https://docs.gitlab.com/ee/user/application_security/dependency_scanning/)
 * gemnasium_python - Checks Python dependencies in requirements.txt file
 * retire      - Retire JS checks NodeJS/ npm dependencies.
-* dep_trivy   - Trivy dependency checks. Refer to `Container checks` section for Trivy installation.
-* dep_owasp   - OWASP Dependency Check. Supports many languages. As this is not a docker, you'll need to exctract it to your home folder:
-
-```
-cd && wget https://github.com/jeremylong/DependencyCheck/releases/download/v6.5.3/dependency-check-6.5.3-release.zip && unzip dependency-check-6.5.3-release.zip
-```
+* dep_trivy   - Trivy dependency checks.
+* dep_owasp   - OWASP Dependency Check. Supports lots of languages.
 
 #### DAST scan:
 
@@ -92,11 +85,10 @@ scansuite.sh <scanner name> <Engagement id> <URL>
 * arachni     - Ensure you have it in your home path:
 
 ```
-cd && wget https://github.com/Arachni/arachni/releases/download/v1.5.1/arachni-1.5.1-0.5.12-linux-x86_64.tar.gz && tar -xvf arachni-1.5.1-0.5.12-linux-x86_64.tar.gz
 Example: ~/scansuite.sh arachni 3 https://google.com
 ```
 
-#### IaC (Infrastructure as Code) scan:
+#### IACS (Infrastructure as Code) scan:
 
 Start the scan from the source code folder.
 
@@ -106,6 +98,6 @@ scansuite.sh iacs_kics <Engagement id>
 ```
 
 * iacs_kics - Checkmarx KICS scanner for Ansible, AWS CloudFormation, Kubernetes, Terraform, Docker
-* iacs_trivy - Trivy checks for config files and dependencies. Refer to `Container checks` section for Trivy installation.
+* iacs_trivy - Trivy checks for config files and dependencies.
 
 Once the scan is performed and uploaded to DefectDojo, login there and check the results.

@@ -7,8 +7,8 @@
 ### Author: Sergey Egorov
 ############
 
-dojo_host='http://YOUR_IP:YOUR_PORT'
-dojo_apikey='YOUR_KEY'
+dojo_host=$HOST_URL
+dojo_apikey=$DOJO_KEY
 
 init_product () {
   echo "Creating New Product ..."
@@ -31,6 +31,42 @@ scan () {
   docker run --rm --volume $(pwd):/src --volume $(pwd):/report --user $(id -u):$(id -g) $container /analyzer r --target-dir /src --artifact-dir /report --max-depth 10
   upload
 }
+
+install_dep_owasp() {
+  DIR="~/scan/dependency-check/"
+  VERSION="6.5.3"
+  if [ ! -d "$DIR" ]; then
+    CURDIR=$(pwd)
+    echo "Installing scanner in ${DIR}..."
+    mkdir ~/scan
+    cd ~/scan && wget https://github.com/jeremylong/DependencyCheck/releases/download/v$VERSION/dependency-check-$VERSION-release.zip && unzip dependency-check-$VERSION-release.zip
+    rm dependency-check-$VERSION-release.zip
+    cd $CURDIR      
+  fi
+}
+
+install_trivy() {
+  VERSION="0.23.0"
+  if ! command -v trivy &> /dev/null
+  then
+      echo "Installing Trivy ..."
+      wget https://github.com/aquasecurity/trivy/releases/download/v$VERSION/trivy_"$VERSION"_Linux-64bit.deb && sudo dpkg -i trivy_$VERSION_Linux-64bit.deb
+      rm trivy_"$VERSION"_Linux-64bit.deb
+  fi
+}
+
+install_arachni() {
+  DIR="~/scan/arachni-1.5.1-0.5.12/"
+  if [ ! -d "$DIR" ]; then
+    CURDIR=$(pwd)
+    echo "Installing scanner in ${DIR}..."
+    mkdir ~/scan
+    cd ~/scan && wget https://github.com/Arachni/arachni/releases/download/v1.5.1/arachni-1.5.1-0.5.12-linux-x86_64.tar.gz && tar -xvf arachni-1.5.1-0.5.12-linux-x86_64.tar.gz
+    rm arachni-1.5.1-0.5.12-linux-x86_64.tar.gz
+    cd $CURDIR
+  fi
+}
+
 
 engagement=$2
 repo='registry.gitlab.com/gitlab-org/security-products/analyzers'
@@ -143,8 +179,9 @@ case $1 in
 # Dynamic analyzers
 
   arachni)
-    ~/arachni-1.5.1-0.5.12/bin/arachni $3 --report-save-path=arachni-report.afr --timeout 2:0:0 --browser-cluster-ignore-images --http-ssl-verify-host --scope-exclude-binaries --checks '*,-sql_injection_timing,-timing_attacks,-code_injection_timing,-os_cmd_injection_timing' --output-only-positives
-    ~/arachni-1.5.1-0.5.12/bin/arachni_reporter arachni-report.afr --reporter=json:outfile=arachni.json
+    install_arachni
+    ~/scan/arachni-1.5.1-0.5.12/bin/arachni $3 --report-save-path=arachni-report.afr --timeout 2:0:0 --browser-cluster-ignore-images --http-ssl-verify-host --scope-exclude-binaries --checks '*,-sql_injection_timing,-timing_attacks,-code_injection_timing,-os_cmd_injection_timing' --output-only-positives
+    ~/scan/arachni-1.5.1-0.5.12/bin/arachni_reporter arachni-report.afr --reporter=json:outfile=arachni.json
     scan_type='"Arachni Scan"'
     report_path='arachni.json'
     upload
@@ -180,7 +217,8 @@ case $1 in
 # Dependency checks
 
   dep_owasp)
-    ~/dependency-check/bin/dependency-check.sh --project test --format XML --scan .
+    install_dep_owasp
+    ~/scan/dependency-check/bin/dependency-check.sh --project test --format XML --scan .
     scan_type='"Dependency Check Scan"'
     report_path='dependency-check-report.xml'
     upload
@@ -209,6 +247,7 @@ case $1 in
 
   # Trivy dependency checks
   dep_trivy)
+    install_trivy
     trivy fs -f json -o trivy.json --security-checks vuln .
     scan_type='Trivy Scan'
     report_path='trivy.json'
@@ -218,6 +257,7 @@ case $1 in
 # Trivy Docker image checks. Provide the image path.
 
   image_trivy)
+    install_trivy
     docker build -t $3 .
     trivy image -f json -o trivy.json $3
     scan_type='Trivy Scan'
@@ -236,6 +276,7 @@ case $1 in
 
   # Trivy checks
   iacs_trivy)
+    install_trivy
     echo "DefectDojo doesn't support this scan type. Parse the results manually."
     trivy fs --security-checks config .
     ;;
