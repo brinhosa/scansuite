@@ -33,7 +33,7 @@ scan () {
 }
 
 install_dep_owasp() {
-  DIR="~/scan/dependency-check/"
+  DIR=~/scan/dependency-check/
   VERSION="6.5.3"
   if [ ! -d "$DIR" ]; then
     CURDIR=$(pwd)
@@ -56,7 +56,7 @@ install_trivy() {
 }
 
 install_arachni() {
-  DIR="~/scan/arachni-1.5.1-0.5.12/"
+  DIR=~/scan/arachni-1.5.1-0.5.12/
   if [ ! -d "$DIR" ]; then
     CURDIR=$(pwd)
     echo "Installing scanner in ${DIR}..."
