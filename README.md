@@ -1,10 +1,13 @@
 
 ### Static and Dynamic Security Analysis with ScanSuite 
 
-ScanSuite is the self contained bash wrapper around the code (SAST), Infrastructure as Code (IACS), Containers and dependency (SCA) analysis tools. It also invokes dynamic scans (DAST).
-Leverages [GitLab](https://docs.gitlab.com/ee/user/application_security/sast/) Docker images as well as other known open source tools. To run most of the scans you'll need to have Docker installed.
+ScanSuite is the self contained bash wrapper around the open source code (SAST), Infrastructure as Code (IACS), Docker image, Containers and dependency (SCA) as well as dynamic analysis (DAST) tools.
 
-Results are exported to [DefectDojo](https://github.com/DefectDojo/django-DefectDojo) (fill in the IP and api key inside the script). Ensure you have it installed.
+Results are exported to [DefectDojo](https://github.com/DefectDojo/django-DefectDojo) (fill in the IP and api key inside the script). Ensure you have it installed. 
+
+Docker is also required here as many of the tools used are dockerised, others will be kindly installed by the script as you call them (tested on Ubuntu).
+
+Script works well for standalone checks or as a part of CI/CD pipeline. Here is the one of many implementation ways [Practical DevSecOps. Challenges of implementation.](https://github.com/cepxeo/presentations/blob/master/Practical_DevSecOps.pdf)
 
 #### Prepare the DefectDojo
 
@@ -92,6 +95,10 @@ scansuite.sh iacs_kics <Engagement id>
 * iacs_trivy - Trivy checks for config files and dependencies.
 
 Once the scan is performed and uploaded to DefectDojo, login there and check the results.
+
+### Manual interaction with DefectDojo
+
+Optionally one can interact with DefectDojo directly using the commands below.
 
 #### Adding manual findings to DefectDojo
 
