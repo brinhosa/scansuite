@@ -3,27 +3,31 @@
 ############
 ### ScanSuite provides the automation of code (SAST), dependency (SCA), infrastructure as code (IACS) and container analysis. It also invokes the dynamic scans (DAST).
 ### Leverages GitLab images as well as other known open source tools. Results are exported to DefectDojo.
-###
-### Author: Sergey Egorov
 ############
 
 dojo_host=HOST_URL
 dojo_apikey=DOJO_API_KEY
 
+date=$(date +"%Y-%m-%d")
+future_date=$(date -d "+2 years" +"%Y-%m-%d")
+
 init_product () {
   echo "Creating New Product ..."
-    curl -k -X POST "$dojo_host/api/v2/products/" -H "accept: application/json" -H "Content-Type: application/json" -H "Authorization: Token $dojo_apikey" -d "{  \"name\": \"$product\",  \"description\": \"$product\",  \"prod_type\": 1}"
+    prodid=$(curl -k -s -X POST "$dojo_host/api/v2/products/" -H "accept: application/json" -H "Content-Type: application/json" -H "Authorization: Token $dojo_apikey" -d "{  \"name\": \"$product\",  \"description\": \"$product\",  \"prod_type\": 1}" | cut -d ":" -f2 | cut -d "," -f1)
+  echo "Creating New Engagement ..."
+    engid=$(curl -k -s -X POST "$dojo_host/api/v2/engagements/" -H "accept: application/json" -H "Content-Type: multipart/form-data" -H "Authorization: Token $dojo_apikey" -F "name=AppEngagement" -F "description=AppEngagement" -F "target_start=$date" -F "target_end=$future_date" -F "deduplication_on_engagement=true" -F "product=$prodid" | cut -d ":" -f2 | cut -d "," -f1)
+  echo "Engagement ID: ${engid}"
 }
 
 init_engage () {
   echo "Creating New Engagement ..."
-    curl -k -X POST "$dojo_host/api/v2/engagements/" -H "accept: application/json" -H "Content-Type: multipart/form-data" -H "Authorization: Token $dojo_apikey" -F "name=AppEngagement" -F "description=AppEngagement" -F "target_start=2022-02-12" -F "target_end=2023-05-20" -F "deduplication_on_engagement=true" -F "product=$product_id"
+    curl -k -X POST "$dojo_host/api/v2/engagements/" -H "accept: application/json" -H "Content-Type: multipart/form-data" -H "Authorization: Token $dojo_apikey" -F "name=AppEngagement" -F "description=AppEngagement" -F "target_start=$date" -F "target_end=$future_date" -F "deduplication_on_engagement=true" -F "product=$product_id"
 }
 
 upload () {
   echo "Uploading Results to DefectDojo ..."
   curl -k -X POST "$dojo_host/api/v2/import-scan/" -H  "accept: application/json" -H  "Content-Type: multipart/form-data"  -H "Authorization: Token $dojo_apikey" -F "minimum_severity=Low" -F "active=true" -F "verified=true" -F "scan_type=$scan_type" -F "file=@$report_path;type=application/json" -F "engagement=$engagement"
-  rm $report_path
+  rm -f $report_path
 }
 
 scan () {
@@ -33,39 +37,68 @@ scan () {
 }
 
 install_dep_owasp() {
-  DIR=~/scan/dependency-check/
-  VERSION="6.5.3"
+  DIR=~/apps/dependency-check/
+
+  if ! command -v java &> /dev/null; then
+      echo "Installing Java ..."
+      sudo apt install -y openjdk-11-jre-headless
+  fi
+
   if [ ! -d "$DIR" ]; then
     CURDIR=$(pwd)
-    echo "Installing scanner in ${DIR}..."
-    mkdir ~/scan
-    cd ~/scan && wget https://github.com/jeremylong/DependencyCheck/releases/download/v$VERSION/dependency-check-$VERSION-release.zip && unzip dependency-check-$VERSION-release.zip
-    rm dependency-check-$VERSION-release.zip
+    echo "Installing Dependency Check in ${DIR}..."
+    sudo apt install unzip
+    mkdir ~/apps
+    cd ~/apps && wget $(curl https://api.github.com/repos/jeremylong/DependencyCheck/releases/latest | grep "release.zip" | grep -v asc | grep -v ant | cut -d '"' -f 4) -O dependency-check.zip
+    unzip dependency-check.zip
+    rm dependency-check.zip
     cd $CURDIR      
   fi
 }
 
 install_trivy() {
-  VERSION="0.23.0"
   if ! command -v trivy &> /dev/null
   then
       echo "Installing Trivy ..."
-      wget https://github.com/aquasecurity/trivy/releases/download/v$VERSION/trivy_"$VERSION"_Linux-64bit.deb && sudo dpkg -i trivy_"$VERSION"_Linux-64bit.deb
-      rm trivy_"$VERSION"_Linux-64bit.deb
+      wget $(curl https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep "Linux-64bit.deb" | cut -d '"' -f 4) -O trivy.deb
+      sudo dpkg -i trivy.deb
+      rm trivy.deb
   fi
 }
 
 install_arachni() {
-  DIR=~/scan/arachni-1.5.1-0.5.12/
+  DIR=~/apps/arachni-1.5.1-0.5.12/
   if [ ! -d "$DIR" ]; then
     CURDIR=$(pwd)
     echo "Installing scanner in ${DIR}..."
-    mkdir ~/scan
-    cd ~/scan && wget https://github.com/Arachni/arachni/releases/download/v1.5.1/arachni-1.5.1-0.5.12-linux-x86_64.tar.gz && tar -xvf arachni-1.5.1-0.5.12-linux-x86_64.tar.gz
+    mkdir ~/apps
+    cd ~/apps && wget https://github.com/Arachni/arachni/releases/download/v1.5.1/arachni-1.5.1-0.5.12-linux-x86_64.tar.gz && tar -xvf arachni-1.5.1-0.5.12-linux-x86_64.tar.gz
     rm arachni-1.5.1-0.5.12-linux-x86_64.tar.gz
     cd $CURDIR
   fi
 }
+
+install_arachni_new() {
+  DIR=~/apps/arachni-1.6.1.3-0.6.1.1/
+  if [ ! -d "$DIR" ]; then
+    CURDIR=$(pwd)
+    echo "Installing Arachni 1.6 dependencies..."
+    wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+    sudo dpkg -i google-chrome-stable_current_amd64.deb
+    sudo apt-get install -f -y
+    rm google-chrome-stable_current_amd64.deb
+    echo "Installing scanner in ${DIR}..."
+    mkdir ~/apps
+    cd ~/apps && wget https://github.com/Arachni/arachni/releases/download/v1.6.1.3/arachni-1.6.1.3-0.6.1.1-linux-x86_64.tar.gz && tar -xvf arachni-1.6.1.3-0.6.1.1-linux-x86_64.tar.gz
+    rm arachni-1.6.1.3-0.6.1.1-linux-x86_64.tar.gz
+    cd $CURDIR
+  fi
+}
+
+echo ""
+echo "------ ScanSuite v1.0 -----"
+echo "-- Author: Sergey Egorov --"
+echo ""
 
 engagement=$2
 repo='registry.gitlab.com/gitlab-org/security-products/analyzers'
@@ -92,13 +125,12 @@ case $1 in
 
 # Static Analyzers
 
-  java)
+  spotbugs)
     container="$repo/spotbugs:latest"
     scan_type='"GitLab SAST Report"'
     report_path='gl-sast-report.json'
     docker run --rm --volume $(pwd):/src --volume $(pwd):/report $container /analyzer r --target-dir /src --artifact-dir /report --max-depth 10
     upload
-    ## Implement the gl-sast-report.json cleanup after upload due to it is owned by root.
     ;;
   
   python)
@@ -119,7 +151,7 @@ case $1 in
     container="returntocorp/semgrep"
     scan_type='"Semgrep JSON Report"'
     report_path='semgrep-sast-report.json'
-    docker run --rm -v "${PWD}:/src" --user $(id -u):$(id -g) $container --config p/owasp-top-ten --json -o $report_path
+    docker run --rm -v "${PWD}:/src" $container semgrep --config p/owasp-top-ten --json -o $report_path
     upload
     ;;
 
@@ -186,17 +218,34 @@ case $1 in
 
   arachni)
     install_arachni
-    ~/scan/arachni-1.5.1-0.5.12/bin/arachni $3 --report-save-path=arachni-report.afr --timeout 2:0:0 --browser-cluster-ignore-images --http-ssl-verify-host --scope-exclude-binaries --checks '*,-sql_injection_timing,-timing_attacks,-code_injection_timing,-os_cmd_injection_timing' --output-only-positives
-    ~/scan/arachni-1.5.1-0.5.12/bin/arachni_reporter arachni-report.afr --reporter=json:outfile=arachni.json
+    ~/apps/arachni-1.5.1-0.5.12/bin/arachni $3 --report-save-path=arachni-report.afr --timeout 2:0:0 --browser-cluster-ignore-images --http-ssl-verify-host --scope-exclude-binaries --checks '*,-*_timing,-backup_files,-common_directories,-backup_directories,-csrf' --output-only-positives --scope-exclude-file-extensions pdf,png,jpg,css,js,gif --scope-page-limit 1000 --scope-dom-depth-limit 1000
+    ~/apps/arachni-1.5.1-0.5.12/bin/arachni_reporter arachni-report.afr --reporter=json:outfile=arachni.json
     scan_type='"Arachni Scan"'
     report_path='arachni.json'
     upload
     ;;
 
-  zap)
-  #ToDo
-    #docker run --rm --volume $(pwd):/src --volume /tmp:/report --user $(id -u):$(id -g) registry.gitlab.com/gitlab-org/security-products/analyzers/dast:latest /analyze -t $3
+  arachni_new)
+    install_arachni_new
+    ~/apps/arachni-1.6.1.3-0.6.1.1/bin/arachni $3 --report-save-path=arachni-report.afr --timeout 2:0:0 --browser-cluster-ignore-images --http-ssl-verify-host --scope-exclude-binaries --checks '*,-*_timing,-backup_files,-common_directories,-backup_directories,-csrf' --output-only-positives --scope-exclude-file-extensions pdf,png,jpg,css,js,gif --scope-page-limit 1000 --scope-dom-depth-limit 1000
+    ~/apps/arachni-1.6.1.3-0.6.1.1/bin/arachni_reporter arachni-report.afr --reporter=json:outfile=arachni.json
+    scan_type='"Arachni Scan"'
+    report_path='arachni.json'
+    upload
+    ;;
 
+  zap_base)
+    docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t $3 -g gen.conf -x zap-report.xml
+    scan_type='"ZAP Scan"'
+    report_path='zap-report.xml'
+    upload
+    ;;
+
+  zap_full)
+    docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-full-scan.py -t $3 -g gen.conf -x zap-report.xml
+    scan_type='"ZAP Scan"'
+    report_path='zap-report.xml'
+    upload
     ;;
 
   nikto)
@@ -224,7 +273,7 @@ case $1 in
 
   dep_owasp)
     install_dep_owasp
-    ~/scan/dependency-check/bin/dependency-check.sh --project test --format XML --scan .
+    ~/apps/dependency-check/bin/dependency-check.sh --project test --format XML --scan .
     scan_type='"Dependency Check Scan"'
     report_path='dependency-check-report.xml'
     upload
@@ -287,7 +336,33 @@ case $1 in
     trivy fs --security-checks config .
     ;;
 
+# Add manual findings
+
+  add_test)
+    echo "Adding Manual Test to an Engagement."
+    testname=$3
+    curl -k -X POST "$dojo_host/api/v2/tests/" -H "accept: application/json" -H "Content-Type: application/json" -H "Authorization: Token $dojo_apikey" -d "{ \"engagement\": $engagement, \"scan_type\": \"Manual Review\", \"title\": \"$testname\", \"description\": \"$testname\", \"target_start\": \"${date}T13:58:17.580Z\", \"target_end\": \"${future_date}T13:58:17.580Z\", \"lead\": 1, \"test_type\": 7, \"environment\": 3 }"
+    ;;
+
+  add_finding)
+    echo "Adding Finding to the Test."
+    test=$2
+    f_name=$3
+    f_severity=$4
+    f_descr=$5
+    f_mitigation=$6
+    curl -k -X POST "$dojo_host/api/v2/findings/" -H "accept: application/json" -H "Content-Type: application/json" -H "Authorization: Token $dojo_apikey"   -d "{ \"test\": $test, \"found_by\": [ 1 ], \"title\": \"$f_name\", \"date\": \"$date\", \"severity\": \"$f_severity\", \"description\": \"$f_descr\", \"mitigation\": \"$f_mitigation\", \"active\": true, \"verified\": false, \"duplicate\": false, \"false_p\": false, \"numerical_severity\": \"S0\"}"
+    ;;
+
+# Export arbitrary report types to DefectDojo
+
+  export_report)
+    scan_type=$3
+    report_path=$4
+    upload
+    ;;
+
   *)
-    echo -n "unknown"
+    echo "Action or scanner name is unknown for ScanSuite."
     ;;
 esac
