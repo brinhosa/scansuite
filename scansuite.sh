@@ -215,7 +215,7 @@ case $1 in
     ;;
   
   gitleaks)
-    docker run -v $(pwd):/src zricethezav/gitleaks:latest detect -s="/src" -r="/src/gitleaks-report.json"
+    docker run --rm -v $(pwd):/src zricethezav/gitleaks:latest detect -s="/src" -r="/src/gitleaks-report.json"
     scan_type='Gitleaks Scan'
     report_path='gitleaks-report.json'
     upload
@@ -242,14 +242,14 @@ case $1 in
     ;;
 
   zap_base)
-    docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t $3 -g gen.conf -x zap-report.xml
+    docker run --rm -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t $3 -g gen.conf -x zap-report.xml
     scan_type='ZAP Scan'
     report_path='zap-report.xml'
     upload
     ;;
 
   zap_full)
-    docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-full-scan.py -t $3 -g gen.conf -x zap-report.xml
+    docker run --rm -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-full-scan.py -t $3 -g gen.conf -x zap-report.xml
     scan_type='ZAP Scan'
     report_path='zap-report.xml'
     upload
@@ -271,7 +271,7 @@ case $1 in
   
   dastardly)
     mkdir dastardly && cd dastardly
-    docker run --user $(id -u) -v $(pwd):/tmp:rw \
+    docker run --rm --user $(id -u) -v $(pwd):/tmp:rw \
     -e DASTARDLY_TARGET_URL=$2 \
     -e DASTARDLY_OUTPUT_FILE=/tmp/dastardly-report.xml \
     public.ecr.aws/portswigger/dastardly:latest
@@ -280,17 +280,17 @@ case $1 in
     ;;
   
   nuclei)
-    docker run -v $(pwd):/tmp projectdiscovery/nuclei:latest -u $3 -silent -json -o /tmp/nuclei-report.json
+    docker run --rm -v $(pwd):/tmp projectdiscovery/nuclei:latest -u $3 -silent -json -o /tmp/nuclei-report.json
     scan_type='Nuclei Scan'
     report_path='nuclei-report.json'
-    upload    
+    upload
     ;;
 
   wpscan)
-    docker run -v $(pwd):/tmp wpscanteam/wpscan --disable-tls-checks --url $3 -f json -o /tmp/wpscan-report.json
+    docker run --rm -v $(pwd):/tmp wpscanteam/wpscan --disable-tls-checks --url $3 -f json -o /tmp/wpscan-report.json
     scan_type='Wpscan'
     report_path='wpscan-report.json'
-    upload    
+    upload
     ;;
 
   nmap)
@@ -330,6 +330,12 @@ case $1 in
     report_path='gl-dependency-scanning-report.json'
     scan
     ;;
+
+  # TODO
+  # osv_scanner)
+  #   docker run --rm -it -v ${PWD}:/src ghcr.io/google/osv-scanner -L /src/pom.xml --json
+  #   docker rm $(docker ps -a -q --filter "ancestor=ghcr.io/google/osv-scanner")
+  #   ;;
 
 # Trivy dependency checks
   dep_trivy)
