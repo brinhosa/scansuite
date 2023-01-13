@@ -9,16 +9,16 @@ Docker is also required here as many of the tools used are dockerised, others wi
 
 Script works well for standalone checks or as a part of CI/CD pipeline. Here is the one of many implementation ways [Practical DevSecOps. Challenges of implementation.](https://github.com/cepxeo/presentations/blob/master/Practical_DevSecOps.pdf)
 
-#### Prepare the DefectDojo
+![](img/scansuite.png)
 
-Create a new Product in DefectDojo:
+#### Create a new Product in DefectDojo
 
 ```
 scansuite.sh init_product <App Name>
 Example: ~/scansuite.sh init_product SomeCoolApp
 ```
 
-Once created, take a note of "Engagement ID". You'll need to provide it during the scans.
+Once created, take a note of `Engagement ID`. You'll need to provide it during the scans.
 
 #### SAST scanners:
 
@@ -42,17 +42,10 @@ Here the `scanner name` is the keyword. Choose from the one of the following:
 * cscan       - Flawfinder C/C++
 * spotbugs    - SpotBugs Java, Kotlin, Groovy, Scala code scan. Works with Ant, Gradle, Maven, and SBT build systems.
 * secrets     - Checking for hardcoded passwords, API keys etc
+* gitleaks    - Detecting passwords, api keys, and tokens in git repos
 
 ```
 Example: ~/scansuite.sh semgrep 3
-```
-
-#### Docker image checks:
-
-[Trivy](https://github.com/aquasecurity/trivy) Docker image scan. Requires the image name with the tag.
-
-```
-Example: ~/scansuite.sh image_trivy 3 vulnerables/web-dvwa:latest                  
 ```
 
 #### Dependency checks:
@@ -74,13 +67,19 @@ scansuite.sh <scanner name> <Engagement id>
 
 ```
 scansuite.sh <scanner name> <Engagement id> <URL>
+
+Example: ~/scansuite.sh zap_full 3 https://ginandjuice.shop
 ```
 
-* zap_base     - ZAP quick baseline scan. Example: ~/scansuite.sh zap_base 3 https://google.com
-* zap_full     - ZAP full scan. Example: ~/scansuite.sh zap_full 3 https://google.com
-* arachni     - Arachni scan. Example: ~/scansuite.sh arachni 3 https://google.com
-* nikto       - Nikto scan. Example: ~/scansuite.sh nikto 3 https://google.com
-* sslyze      - SSL checks. Example: ~/scansuite.sh sslyze 3 google.com:443
+* zap_base     - ZAP quick baseline scan.
+* zap_full     - ZAP full scan.
+* arachni      - Arachni 1.5
+* arachni_new  - Arachni 1.5
+* nikto        - Nikto
+* dastardly    - PortSwigger Dastardly. Results are not exported due to not supported by DefectDojo.
+* nuclei       - Nuclei
+* wpscan       - WordPress Scanner
+* sslyze       - SSL checks. Example: ~/scansuite.sh sslyze 3 google.com:443
 
 #### IACS (Infrastructure as Code) scan:
 
@@ -95,6 +94,22 @@ scansuite.sh iacs_kics <Engagement id>
 * iacs_trivy - Trivy checks for config files and dependencies.
 
 Once the scan is performed and uploaded to DefectDojo, login there and check the results.
+
+#### Docker image checks:
+
+[Trivy](https://github.com/aquasecurity/trivy) Docker image scan. Requires the image name with the tag.
+
+```
+Example: ~/scansuite.sh image_trivy 3 vulnerables/web-dvwa:latest                  
+```
+
+#### CIS Docker Benchmarks checks:
+
+[Docker Bench for Security](https://github.com/docker/docker-bench-security) Docker Benchmarks checks.
+
+```
+Example: ~/scansuite.sh scansuite.sh docker_bench 3              
+```
 
 ### Manual interaction with DefectDojo
 

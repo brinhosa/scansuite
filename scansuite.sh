@@ -49,7 +49,7 @@ install_dep_owasp() {
     echo "Installing Dependency Check in ${DIR}..."
     sudo apt install unzip
     mkdir ~/apps
-    cd ~/apps && wget $(curl https://api.github.com/repos/jeremylong/DependencyCheck/releases/latest | grep "release.zip" | grep -v asc | grep -v ant | cut -d '"' -f 4) -O dependency-check.zip
+    cd ~/apps && wget $(curl https://api.github.com/repos/jeremylong/DependencyCheck/releases/latest | grep "release.zip" | grep -v asc | grep -v ant | cut -d '' -f 4) -O dependency-check.zip
     unzip dependency-check.zip
     rm dependency-check.zip
     cd $CURDIR      
@@ -60,7 +60,7 @@ install_trivy() {
   if ! command -v trivy &> /dev/null
   then
       echo "Installing Trivy ..."
-      wget $(curl https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep "Linux-64bit.deb" | cut -d '"' -f 4) -O trivy.deb
+      wget $(curl https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep "Linux-64bit.deb" | cut -d '' -f 4) -O trivy.deb
       sudo dpkg -i trivy.deb
       rm trivy.deb
   fi
@@ -96,7 +96,7 @@ install_arachni_new() {
 }
 
 echo ""
-echo "------ ScanSuite v1.0 -----"
+echo "------ ScanSuite v1.1 -----"
 echo "-- Author: Sergey Egorov --"
 echo ""
 
@@ -127,7 +127,7 @@ case $1 in
 
   spotbugs)
     container="$repo/spotbugs:latest"
-    scan_type='"GitLab SAST Report"'
+    scan_type='GitLab SAST Report'
     report_path='gl-sast-report.json'
     docker run --rm --volume $(pwd):/src --volume $(pwd):/report $container /analyzer r --target-dir /src --artifact-dir /report --max-depth 10
     upload
@@ -135,21 +135,21 @@ case $1 in
   
   python)
     container="$repo/bandit:latest"
-    scan_type='"GitLab SAST Report"'
+    scan_type='GitLab SAST Report'
     report_path='gl-sast-report.json'
     scan
     ;;
 
   eslint)
     container="$repo/eslint:latest"
-    scan_type='"GitLab SAST Report"'
+    scan_type='GitLab SAST Report'
     report_path='gl-sast-report.json'
     scan
     ;;
   
   semgrep)
     container="returntocorp/semgrep"
-    scan_type='"Semgrep JSON Report"'
+    scan_type='Semgrep JSON Report'
     report_path='semgrep-sast-report.json'
     docker run --rm -v "${PWD}:/src" $container semgrep --config p/owasp-top-ten --json -o $report_path
     upload
@@ -157,49 +157,49 @@ case $1 in
 
   php)
     container="$repo/phpcs-security-audit:latest"
-    scan_type='"GitLab SAST Report"'
+    scan_type='GitLab SAST Report'
     report_path='gl-sast-report.json'
     scan
     ;;
 
   net)
     container="$repo/security-code-scan:latest"
-    scan_type='"GitLab SAST Report"'
+    scan_type='GitLab SAST Report'
     report_path='gl-sast-report.json'
     scan
     ;;
 
   mobsf)
     container="$repo/mobsf:latest"
-    scan_type='"GitLab SAST Report"'
+    scan_type='GitLab SAST Report'
     report_path='gl-sast-report.json'
     scan
     ;;
 
   nodejs)
     container="$repo/nodejs-scan:latest"
-    scan_type='"GitLab SAST Report"'
+    scan_type='GitLab SAST Report'
     report_path='gl-sast-report.json'
     scan
     ;;
 
   go)
     container="$repo/gosec:latest"
-    scan_type='"GitLab SAST Report"'
+    scan_type='GitLab SAST Report'
     report_path='gl-sast-report.json'
     scan
     ;;
 
   ruby)
     container="$repo/brakeman:latest"
-    scan_type='"GitLab SAST Report"'
+    scan_type='GitLab SAST Report'
     report_path='gl-sast-report.json'
     scan
     ;;
 
   cscan)
     container="$repo/flawfinder:latest"
-    scan_type='"GitLab SAST Report"'
+    scan_type='GitLab SAST Report'
     report_path='gl-sast-report.json'
     scan
     ;;
@@ -213,6 +213,13 @@ case $1 in
     cat $report_path
     rm $report_path
     ;;
+  
+  gitleaks)
+    docker run -v $(pwd):/src zricethezav/gitleaks:latest detect -s="/src" -r="/src/gitleaks-report.json"
+    scan_type='Gitleaks Scan'
+    report_path='gitleaks-report.json'
+    upload
+    ;;
 
 # Dynamic analyzers
 
@@ -220,7 +227,7 @@ case $1 in
     install_arachni
     ~/apps/arachni-1.5.1-0.5.12/bin/arachni $3 --report-save-path=arachni-report.afr --timeout 2:0:0 --browser-cluster-ignore-images --http-ssl-verify-host --scope-exclude-binaries --checks '*,-*_timing,-backup_files,-common_directories,-backup_directories,-csrf' --output-only-positives --scope-exclude-file-extensions pdf,png,jpg,css,js,gif --scope-page-limit 1000 --scope-dom-depth-limit 1000
     ~/apps/arachni-1.5.1-0.5.12/bin/arachni_reporter arachni-report.afr --reporter=json:outfile=arachni.json
-    scan_type='"Arachni Scan"'
+    scan_type='Arachni Scan'
     report_path='arachni.json'
     upload
     ;;
@@ -229,42 +236,66 @@ case $1 in
     install_arachni_new
     ~/apps/arachni-1.6.1.3-0.6.1.1/bin/arachni $3 --report-save-path=arachni-report.afr --timeout 2:0:0 --browser-cluster-ignore-images --http-ssl-verify-host --scope-exclude-binaries --checks '*,-*_timing,-backup_files,-common_directories,-backup_directories,-csrf' --output-only-positives --scope-exclude-file-extensions pdf,png,jpg,css,js,gif --scope-page-limit 1000 --scope-dom-depth-limit 1000
     ~/apps/arachni-1.6.1.3-0.6.1.1/bin/arachni_reporter arachni-report.afr --reporter=json:outfile=arachni.json
-    scan_type='"Arachni Scan"'
+    scan_type='Arachni Scan'
     report_path='arachni.json'
     upload
     ;;
 
   zap_base)
     docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t $3 -g gen.conf -x zap-report.xml
-    scan_type='"ZAP Scan"'
+    scan_type='ZAP Scan'
     report_path='zap-report.xml'
     upload
     ;;
 
   zap_full)
     docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-full-scan.py -t $3 -g gen.conf -x zap-report.xml
-    scan_type='"ZAP Scan"'
+    scan_type='ZAP Scan'
     report_path='zap-report.xml'
     upload
     ;;
 
   nikto)
     docker run --rm -v $(pwd):/tmp --user $(id -u):$(id -g) hysnsec/nikto -h $3 -o /tmp/nikto-output.xml
-    scan_type='"Nikto Scan"'
+    scan_type='Nikto Scan'
     report_path='nikto-output.xml'
     upload
     ;;
 
   sslyze)
     docker run --rm -v $(pwd):/tmp --user $(id -u):$(id -g) hysnsec/sslyze --regular $3 --json_out /tmp/sslyze-output.json
-    scan_type='"Sslyze Scan"'
+    scan_type='Sslyze Scan'
     report_path='sslyze-output.json'
     upload
+    ;;
+  
+  dastardly)
+    mkdir dastardly && cd dastardly
+    docker run --user $(id -u) -v $(pwd):/tmp:rw \
+    -e DASTARDLY_TARGET_URL=$2 \
+    -e DASTARDLY_OUTPUT_FILE=/tmp/dastardly-report.xml \
+    public.ecr.aws/portswigger/dastardly:latest
+    mv dastardly-report.xml ../ ; cd .. ; rm -r dastardly/
+    cat dastardly-report.xml
+    ;;
+  
+  nuclei)
+    docker run -v $(pwd):/tmp projectdiscovery/nuclei:latest -u $3 -silent -json -o /tmp/nuclei-report.json
+    scan_type='Nuclei Scan'
+    report_path='nuclei-report.json'
+    upload    
+    ;;
+
+  wpscan)
+    docker run -v $(pwd):/tmp wpscanteam/wpscan --disable-tls-checks --url $3 -f json -o /tmp/wpscan-report.json
+    scan_type='Wpscan'
+    report_path='wpscan-report.json'
+    upload    
     ;;
 
   nmap)
     docker run --rm -v $(pwd):/tmp --user $(id -u):$(id -g) hysnsec/nmap $3 -oX /tmp/nmap-output.xml
-    scan_type='"Nmap Scan"'
+    scan_type='Nmap Scan'
     report_path='nmap-output.xml'
     upload
     ;;
@@ -274,7 +305,7 @@ case $1 in
   dep_owasp)
     install_dep_owasp
     ~/apps/dependency-check/bin/dependency-check.sh --project test --format XML --scan .
-    scan_type='"Dependency Check Scan"'
+    scan_type='Dependency Check Scan'
     report_path='dependency-check-report.xml'
     upload
     ;;
@@ -320,11 +351,31 @@ case $1 in
     upload
     ;;
 
+# Docker Bench for Security
+# Checks for dozens of common best-practices around deploying Docker containers in production.
+# Based on the CIS Docker Benchmark 1.4.0.
+
+  docker_bench)
+      CURDIR=$(pwd)
+      DIR=~/apps/docker-bench-security
+      if [ ! -d "$DIR" ]; then
+        echo "Installing Docker Bench ..."
+        mkdir ~/apps
+        cd ~/apps && git clone https://github.com/docker/docker-bench-security.git
+      fi
+      cd ~/apps/docker-bench-security && sudo sh docker-bench-security.sh
+      scan_type='docker-bench-security Scan'
+      report_path='log/docker-bench-security.log.json'
+      sudo chmod 777 $report_path
+      upload
+      cd $CURDIR
+      ;;
+
 # Infrastructure as Code.
 
   iacs_kics)
     container="$repo/kics:latest"
-    scan_type='"GitLab SAST Report"'
+    scan_type='GitLab SAST Report'
     report_path='gl-sast-report.json'
     scan
     ;;
