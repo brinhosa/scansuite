@@ -3,7 +3,7 @@
 
 ScanSuite is the self contained bash wrapper around the open source code (SAST), Infrastructure as Code (IACS), Docker image, Containers and dependency (SCA) as well as dynamic analysis (DAST) tools.
 
-Results are exported to [DefectDojo](https://github.com/DefectDojo/django-DefectDojo) (fill in the IP and api key inside the script). Ensure you have it installed. 
+Results are exported to [DefectDojo](https://github.com/DefectDojo/django-DefectDojo) (`fill in the IP and api key inside the script`). Ensure you have it installed. 
 
 Docker is also required here as many of the tools used are dockerised, others will be kindly installed by the script as you call them (tested on Ubuntu).
 
@@ -71,13 +71,13 @@ scansuite.sh <scanner name> <Engagement id> <URL>
 Example: ~/scansuite.sh zap_full 3 https://ginandjuice.shop
 ```
 
-* zap_base     - ZAP quick baseline scan.
-* zap_full     - ZAP full scan.
+* zap_base     - ZAP quick baseline scan
+* zap_full     - ZAP full scan
 * arachni      - Arachni 1.5
-* arachni_new  - Arachni 1.5
-* nikto        - Nikto
-* dastardly    - PortSwigger Dastardly. Results are not exported due to not supported by DefectDojo.
-* nuclei       - Nuclei
+* arachni_new  - Arachni 1.6
+* nikto        - Nikto by Netsparker
+* dastardly    - PortSwigger Dastardly. Results are not exported due to not supported by DefectDojo
+* nuclei       - Nuclei vulnerability scanner
 * wpscan       - WordPress Scanner
 * sslyze       - SSL checks. Example: ~/scansuite.sh sslyze 3 google.com:443
 
