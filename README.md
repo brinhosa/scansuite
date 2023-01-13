@@ -95,20 +95,24 @@ scansuite.sh iacs_kics <Engagement id>
 
 Once the scan is performed and uploaded to DefectDojo, login there and check the results.
 
-#### Docker image checks:
+#### Docker and Kubernetes checks:
 
-[Trivy](https://github.com/aquasecurity/trivy) Docker image scan. Requires the image name with the tag.
+* [Trivy](https://github.com/aquasecurity/trivy) Docker image scan. Requires the image name with the tag.
 
 ```
 Example: ~/scansuite.sh image_trivy 3 vulnerables/web-dvwa:latest                  
 ```
 
-#### CIS Docker Benchmarks checks:
-
-[Docker Bench for Security](https://github.com/docker/docker-bench-security) Docker Benchmarks checks.
+* [Docker Bench for Security](https://github.com/docker/docker-bench-security) CIS Docker Benchmarks checks.
 
 ```
-Example: ~/scansuite.sh scansuite.sh docker_bench 3              
+Example: ~/scansuite.sh docker_bench 3              
+```
+
+* [kube-bench](https://github.com/aquasecurity/kube-bench) CIS Kubernetes Benchmarks checks.
+
+```
+Example: ~/scansuite.sh kube_bench 3              
 ```
 
 ### Manual interaction with DefectDojo

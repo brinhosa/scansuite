@@ -96,7 +96,7 @@ install_arachni_new() {
 }
 
 echo ""
-echo "------ ScanSuite v1.1 -----"
+echo "------ ScanSuite v1.2 -----"
 echo "-- Author: Sergey Egorov --"
 echo ""
 
@@ -347,7 +347,6 @@ case $1 in
     ;;
 
 # Trivy Docker image checks.
-
   image_trivy)
     install_trivy
     docker build -t $3 .
@@ -358,9 +357,6 @@ case $1 in
     ;;
 
 # Docker Bench for Security
-# Checks for dozens of common best-practices around deploying Docker containers in production.
-# Based on the CIS Docker Benchmark 1.4.0.
-
   docker_bench)
       CURDIR=$(pwd)
       DIR=~/apps/docker-bench-security
@@ -376,6 +372,14 @@ case $1 in
       upload
       cd $CURDIR
       ;;
+
+# CIS Kubernetes Benchmark.
+  kube_bench)
+    docker run --rm --pid=host -v /etc:/etc:ro -v /var:/var:ro -v $(pwd):/tmp -t docker.io/aquasec/kube-bench:latest --json --outputfile /tmp/kube-bench-report.json
+    scan_type='kube-bench Scan'
+    report_path='kube-bench-report.json'
+    upload
+    ;;
 
 # Infrastructure as Code.
 
